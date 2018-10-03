@@ -1,0 +1,12 @@
+## APIVersion: 100024 100025
+## Title: Inventorious
+## Author: fr33r4ng3r
+## Description: Inventorious automates inventory cleanup based on predefined SetTracker categories and FCOIS
+## Version 0.0.1
+## SavedVariables: Inventorious_State
+## DependsOn: SetTracker FCOItemSaver
+
+src/Rules.lua
+src/SetHoldings.lua
+
+Inventorious.lua
