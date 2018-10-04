@@ -232,7 +232,9 @@ AccountHoldings.create = function()
                 self.holdings[setName][i] = holding
             end
 
-            result = holding.CheckItem(uniqueId, itemLink, trackName, wornBy)
+            local favorIndex = (count % Rules.SET_FAVOR_INDEX_MAX) + 1
+
+            result = holding.CheckItem(uniqueId, itemLink, trackName, favorIndex, wornBy)
 
             if (result == nil) then
                 d("WARNING!: Unexpected Nil Result")
@@ -332,7 +334,7 @@ SetHoldings.create = function(itemSetName, copy)
         self.items = temp
     end
 
-    local checkItem = function(uniqueId, itemLink, trackName, wornBy)
+    local checkItem = function(uniqueId, itemLink, trackName, favorIndex, wornBy)
         local item = SetHoldingItem.create(uniqueId, itemLink, wornBy)
         local keys = item.GetKeys()
         local kept = false
@@ -384,14 +386,23 @@ SetHoldings.create = function(itemSetName, copy)
                         end
                     end
                 end
+                local compareWorn = function(existing, swap)
+                    if item.GetWornBy ~= nil and existing.GetWornBy == nil then
+                        swap()
+                    end
+                end
                 local compareQuality = function(existing, swap)
                     if item.GetQuality() > existing.GetQuality() then
                         swap()
+                    elseif item.GetQuality() == existing.GetQuality() then
+                        compareWorn(existing, swap)
                     end
                 end
                 local compareWeapons = function(existing, existingWeaponOrder, swap)
                     if newWeaponOrder > 0 then
-                        if (newWeaponOrder < existingWeaponOrder) then
+                        if (newWeaponOrder ~= existingWeaponOrder and newWeaponOrder == favorIndex) then
+                            swap()
+                        elseif (newWeaponOrder < existingWeaponOrder) then
                             swap()
                         elseif (newWeaponOrder == existingWeaponOrder) then
                             compareQuality(existing, swap)
@@ -402,7 +413,9 @@ SetHoldings.create = function(itemSetName, copy)
                 end
                 if (newTraitOrder > 0) then
                     forEachKey(function(existing, existingTraitOrder, existingWeaponOrder, swap)
-                        if (newTraitOrder < existingTraitOrder) then
+                        if (newTraitOrder ~= existingTraitOrder and newTraitOrder == favorIndex) then
+                            swap()
+                        elseif (newTraitOrder < existingTraitOrder) then
                             swap()
                         elseif newTraitOrder == existingTraitOrder then
                             compareWeapons(existing, existingWeaponOrder, swap)
