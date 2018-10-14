@@ -7,11 +7,29 @@ local AccountHoldings = Inventorious.imports.AccountHoldings
 
 -- locals
 
+local bagNames = {
+    [BAG_WORN] = "Equipped",
+    [BAG_BACKPACK] = "Backpack",
+    [BAG_BANK] = "Bank",
+    [BAG_SUBSCRIBER_BANK] = "Bank",
+    [BAG_HOUSE_BANK_ONE] = "Housing Storage #1",
+    [BAG_HOUSE_BANK_TWO] = "Housing Storage #2",
+    [BAG_HOUSE_BANK_THREE] = "Housing Storage #3",
+    [BAG_HOUSE_BANK_FOUR] = "Housing Storage #4",
+    [BAG_HOUSE_BANK_FIVE] = "Housing Storage #5",
+    [BAG_HOUSE_BANK_SIX] = "Housing Storage #6",
+    [BAG_HOUSE_BANK_SEVEN] = "Housing Storage #7",
+    [BAG_HOUSE_BANK_EIGHT] = "Housing Storage #8",
+    [BAG_HOUSE_BANK_NINE] = "Housing Storage #9",
+    [BAG_HOUSE_BANK_TEN] = "Housing Storage #10"
+}
+
 local initialized = false
 local bagList
 local holdings
 
 local function checkInventory(character, bagId, isTest)
+    d("Checking Bag " .. bagNames[bagId])
     local nBagItems = GetBagSize(bagId)
     for slotIdx = 0, nBagItems - 1 do
         local itemId = GetItemId(bagId, slotIdx)

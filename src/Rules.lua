@@ -544,7 +544,7 @@ local traitOrders = {
         [ITEM_TRAIT_TYPE_NONE]                 = { [EQUIP_TYPE_OTHER] = 9 }
     },
     [SET_TRACK_SELL_DECON]             = {
-        [ITEM_TRAIT_TYPE_ARMOR_DIVINES]        = { [EQUIP_TYPE_OTHER] = 2 },
+        [ITEM_TRAIT_TYPE_ARMOR_DIVINES]        = { [EQUIP_TYPE_OTHER] = 99 },
         [ITEM_TRAIT_TYPE_ARMOR_IMPENETRABLE]   = { [EQUIP_TYPE_OTHER] = 99 },
         [ITEM_TRAIT_TYPE_ARMOR_INFUSED]        = { [EQUIP_TYPE_OTHER] = 99 },
         [ITEM_TRAIT_TYPE_ARMOR_INTRICATE]      = { [EQUIP_TYPE_OTHER] = 99 },

@@ -232,7 +232,7 @@ AccountHoldings.create = function()
                 self.holdings[setName][i] = holding
             end
 
-            local favorIndex = (count % Rules.SET_FAVOR_INDEX_MAX) + 1
+            local favorIndex = (count % Rules.SET_FAVOR_INDEX_MAX)
 
             result = holding.CheckItem(uniqueId, itemLink, trackName, favorIndex, wornBy)
 
@@ -259,7 +259,7 @@ AccountHoldings.create = function()
                 return
             elseif (result.disposition == DISPOSITION_DECON) then
                 if not (FCOIS.IsMarkedByItemInstanceId(result.item.GetUniqueId(), FCOIS_CON_ICON_DECONSTRUCTION)) then
-                    d("Marking item to decon: " .. setName .. " " .. result.item.ToString())
+                    d("Marking trash set for decon: " .. setName .. " " .. result.item.ToString())
                     if isTest == false then
                         FCOIS.MarkItemByItemInstanceId(result.item.GetUniqueId(), FCOIS_CON_ICON_DECONSTRUCTION, true, result.item.GetLink())
                     end
@@ -291,7 +291,7 @@ AccountHoldings.create = function()
 
         if not (FCOIS.IsMarkedByItemInstanceId(result.item.GetUniqueId(), FCOIS_CON_ICON_DECONSTRUCTION)) then
             if (unmarked == false or result.item.GetUniqueId() ~= uniqueId) then
-                d("Marking item to decon: " .. setName .. " " .. result.item.ToString())
+                d("Marking item to decon (you have a better one somewhere): " .. setName .. " " .. result.item.ToString())
             end
             if isTest == false then
                 FCOIS.MarkItemByItemInstanceId(result.item.GetUniqueId(), FCOIS_CON_ICON_DECONSTRUCTION, true, result.item.GetLink())
@@ -375,8 +375,9 @@ SetHoldings.create = function(itemSetName, copy)
                         if (existing ~= nil) then
                             local existingTraitOrder = existing.GetTraitOrder(trackName)
                             local existingWeaponOrder = existing.GetWeaponOrder(trackName)
-                            local swap = function()
-                                d("Replacing " .. existing.ToString() .. " with " .. item.ToString() .. " for " .. self.itemSetName .. " [" .. trackName .. "]")
+                            local swap = function(reason)
+                                reason = reason or ""
+                                d("Replacing " .. existing.ToString() .. " with " .. item.ToString() .. " for " .. self.itemSetName .. " [" .. trackName .. "] because of " .. reason)
                                 self.items[key] = item
                                 item = existing
                                 newTraitOrder = existingTraitOrder
@@ -388,12 +389,12 @@ SetHoldings.create = function(itemSetName, copy)
                 end
                 local compareWorn = function(existing, swap)
                     if item.GetWornBy ~= nil and existing.GetWornBy == nil then
-                        swap()
+                        swap("currently worn")
                     end
                 end
                 local compareQuality = function(existing, swap)
                     if item.GetQuality() > existing.GetQuality() then
-                        swap()
+                        swap("better quality")
                     elseif item.GetQuality() == existing.GetQuality() then
                         compareWorn(existing, swap)
                     end
@@ -401,9 +402,9 @@ SetHoldings.create = function(itemSetName, copy)
                 local compareWeapons = function(existing, existingWeaponOrder, swap)
                     if newWeaponOrder > 0 then
                         if (newWeaponOrder ~= existingWeaponOrder and newWeaponOrder == favorIndex) then
-                            swap()
+                            swap("favored weapon rule [#: " .. favorIndex .. "]")
                         elseif (newWeaponOrder < existingWeaponOrder) then
-                            swap()
+                            swap("weapon order rule")
                         elseif (newWeaponOrder == existingWeaponOrder) then
                             compareQuality(existing, swap)
                         end
@@ -414,9 +415,9 @@ SetHoldings.create = function(itemSetName, copy)
                 if (newTraitOrder > 0) then
                     forEachKey(function(existing, existingTraitOrder, existingWeaponOrder, swap)
                         if (newTraitOrder ~= existingTraitOrder and newTraitOrder == favorIndex) then
-                            swap()
+                            swap("favored trait [#: " .. favorIndex .. "]")
                         elseif (newTraitOrder < existingTraitOrder) then
-                            swap()
+                            swap("better trait")
                         elseif newTraitOrder == existingTraitOrder then
                             compareWeapons(existing, existingWeaponOrder, swap)
                         end
