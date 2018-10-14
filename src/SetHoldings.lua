@@ -232,7 +232,9 @@ AccountHoldings.create = function()
                 self.holdings[setName][i] = holding
             end
 
-            local favorIndex = (count % Rules.SET_FAVOR_INDEX_MAX)
+            local favorIndex = ((i - 1) % Rules.SET_FAVOR_INDEX_MAX) + 1
+
+            -- d("Looking at set " .. setName .. "[" .. i .. "] with FI=" .. favorIndex);
 
             result = holding.CheckItem(uniqueId, itemLink, trackName, favorIndex, wornBy)
 
@@ -336,34 +338,43 @@ SetHoldings.create = function(itemSetName, copy)
 
     local checkItem = function(uniqueId, itemLink, trackName, favorIndex, wornBy)
         local item = SetHoldingItem.create(uniqueId, itemLink, wornBy)
+        local newTraitOrder = item.GetTraitOrder(trackName)
+        local newWeaponOrder = item.GetWeaponOrder(trackName)
         local keys = item.GetKeys()
         local kept = false
         for i, key in ipairs(keys) do
             local existing = self.items[key]
             if existing ~= nil and existing.GetUniqueId() == uniqueId then
-                kept = true
+                if (newTraitOrder < 0 and newWeaponOrder < 0)
+                        or (newTraitOrder == 99 or newWeaponOrder == 99)
+                        or (newTraitOrder == 98 or newWeaponOrder == 98) then
+                    self.items[key] = nil
+                else
+                    kept = true
+                end
                 break
             elseif existing == nil then
-                self.items[key] = item
-                kept = true
+                if (newTraitOrder >= 0 and newWeaponOrder >= 0)
+                        and (newTraitOrder < 98 and newWeaponOrder < 98) then
+                    self.items[key] = item
+                    kept = true
+                end
                 break
             end
         end
         if not kept == true then
             -- d("Found Duplicate of " .. self.itemSetName .. " ".. item.GetKey() .. " in " .. trackName)
-            local newTraitOrder = item.GetTraitOrder(trackName)
-            local newWeaponOrder = item.GetWeaponOrder(trackName)
             if newTraitOrder < 0 and newWeaponOrder < 0 then
                 return {
                     disposition = DISPOSITION_SKIP,
                     item        = item
                 }
-            elseif newTraitOrder == 99 or newWeaponOrder == 99 then
+            elseif newTraitOrder >= 99 or newWeaponOrder >= 99 then
                 return {
                     disposition = DISPOSITION_DECON,
                     item        = item
                 }
-            elseif newTraitOrder == 98 or newWeaponOrder == 98 then
+            elseif newTraitOrder >= 98 or newWeaponOrder >= 98 then
                 return {
                     disposition = DISPOSITION_SELL,
                     item        = item
